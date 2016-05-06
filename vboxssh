@@ -1,0 +1,59 @@
+#!/bin/bash
+# Script for ssh connect to Virtual Box virtual machines
+# Author: Zitai Chen
+# Email: chenzitai@139.com
+
+#For select Virtual Machine
+error=0
+if [ "$2" == "sec" ] 
+then
+    MachineName="intro-comp-secVM_1"
+    sship=`VBoxManage guestproperty get "$MachineName" "/VirtualBox/GuestInfo/Net/1/V4/IP" | awk '{ print $2 }'`
+    sshuid="bob"
+elif [ "$2" == "os" ] 
+then
+    MachineName="Ubuntu 14.04 (OS)"
+    sship=`VBoxManage guestproperty get "$MachineName" "/VirtualBox/GuestInfo/Net/0/V4/IP" | awk '{ print $2 }'`
+    sshuid="user"
+elif [ "$2" == "newsec" ] 
+then
+    MachineName="ICSVM_2016_3"
+    sship=`VBoxManage guestproperty get "$MachineName" "/VirtualBox/GuestInfo/Net/1/V4/IP" | awk '{ print $2 }'`
+    sshuid="dan"
+else
+    echo "Please input valid Machine Name"
+    error=1
+fi
+#Machine chontrol command
+if [ "$1" == "start" ] 
+then
+    echo power
+    VBoxManage startvm "$MachineName" --type headless
+elif [ "$1" == "restart" ]
+then
+    VBoxManage controlvm "$MachineName" reset
+elif [ "$1" == "shutdown" ]
+then
+    VBoxManage controlvm "$MachineName" acpipowerbutton
+elif [ "$1" == "poweroff" ]
+then
+    VBoxManage controlvm "$MachineName" poweroff
+elif [ "$1" == "snapshot" ]
+then
+    VBoxManage snapshot "$MachineName" take "$3"
+elif [ "$1" == "ssh" ] 
+then
+    ssh -X $sshuid@$sship
+elif [ "$1" == "ip" ]
+then
+    echo $sship
+else
+    echo "Please input valid command"
+    error=1
+fi
+
+#error control
+if [ $error -eq 1 ]
+then
+    echo "Useage: $0 <start|restart|shutdown|poweroff|ssh|ip> <MachineNickName>"
+fi
